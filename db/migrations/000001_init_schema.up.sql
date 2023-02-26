@@ -26,13 +26,13 @@ CREATE TABLE "files" (
   "created_by_id" bigint NOT NULL
 );
 
-CREATE TABLE "data" (
+CREATE TABLE "match_data" (
   "id" bigserial PRIMARY KEY,
   "home_scored" integer NOT NULL,
   "away_scored" integer NOT NULL,
   "home_team" varchar NOT NULL,
   "away_team" varchar NOT NULL,
-  "match_day" timestamptz NOT NULL DEFAULT (now()),
+  "match_date" timestamptz NOT NULL,
   "referee" varchar NOT NULL,
   "winner" varchar NOT NULL,
   "season" varchar NOT NULL,
@@ -45,6 +45,6 @@ ALTER TABLE "sessions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 
 ALTER TABLE "files" ADD FOREIGN KEY ("created_by_id") REFERENCES "users" ("id");
 
-ALTER TABLE "data" ADD FOREIGN KEY ("created_by_id") REFERENCES "users" ("id");
+ALTER TABLE "match_data" ADD FOREIGN KEY ("created_by_id") REFERENCES "users" ("id");
 
-ALTER TABLE "data" ADD FOREIGN KEY ("file_id") REFERENCES "files" ("id");
+ALTER TABLE "match_data" ADD FOREIGN KEY ("file_id") REFERENCES "files" ("id");
