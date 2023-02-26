@@ -3,7 +3,7 @@ INSERT INTO files (
     file_url, 
     created_by_id
 ) VALUES (
-  $1, $2, $3
+  $1, $2
 )
 RETURNING *;
 
