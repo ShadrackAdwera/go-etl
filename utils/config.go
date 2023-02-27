@@ -7,8 +7,9 @@ import (
 )
 
 type AppConfig struct {
-	DbUrl    string `mapstructure:"TEST_DB_URL"`
-	DbDriver string `mapstructure:"DB_DRIVER"`
+	DbUrl     string `mapstructure:"TEST_DB_URL"`
+	DbDriver  string `mapstructure:"DB_DRIVER"`
+	PasetoKey string `mapstructure:"PASETO_SYMMETRIC_KEY"`
 }
 
 func LoadConfig(path string) (config AppConfig, err error) {
