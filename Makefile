@@ -1,4 +1,4 @@
-DB_URL=postgresql://root:password@localhost:5431/go_etl?sslmode=disable
+DB_URL=postgresql://root:password@localhost:5431/go_etl_test?sslmode=disable
 
 create_db:
 	docker exec -it postgres15 createdb --username=root --owner=root go_etl
