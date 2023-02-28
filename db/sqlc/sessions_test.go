@@ -16,7 +16,7 @@ func CreateSession(t *testing.T) Session {
 
 	require.NoError(t, err)
 
-	refreshToken, err := testMaker.CreateToken(user.Username, user.ID, time.Minute)
+	_, refreshToken, err := testMaker.CreateToken(user.Username, user.ID, user.Email, time.Minute)
 
 	require.NoError(t, err)
 
