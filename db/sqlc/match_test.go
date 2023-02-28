@@ -112,3 +112,35 @@ func TestUpdateMatch(t *testing.T) {
 	require.Equal(t, updatedMatch.CreatedByID, newMatch.CreatedByID)
 	require.Equal(t, updatedMatch.FileID, newMatch.FileID)
 }
+
+func TestDeleteMatch(t *testing.T) {
+	user := CreateUser(t)
+
+	newMatch := CreateMatch(t, user)
+
+	match, err := testQuery.GetMatchDataById(context.Background(), newMatch.ID)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, match)
+	require.NotZero(t, match.ID)
+	require.Equal(t, match.HomeScored, newMatch.HomeScored)
+	require.Equal(t, match.AwayScored, newMatch.AwayScored)
+	require.Equal(t, match.HomeTeam, newMatch.HomeTeam)
+	require.Equal(t, match.AwayTeam, newMatch.AwayTeam)
+	require.Equal(t, match.MatchDate, newMatch.MatchDate)
+	require.Equal(t, match.Referee, newMatch.Referee)
+	require.Equal(t, match.Winner, newMatch.Winner)
+	require.Equal(t, match.Season, newMatch.Season)
+	require.Equal(t, match.CreatedByID, newMatch.CreatedByID)
+	require.Equal(t, match.FileID, newMatch.FileID)
+
+	err = testQuery.DeleteMatchData(context.Background(), newMatch.ID)
+
+	require.NoError(t, err)
+
+	match, err = testQuery.GetMatchDataById(context.Background(), newMatch.ID)
+
+	require.ErrorIs(t, err, sql.ErrNoRows)
+	require.Nil(t, match)
+
+}
