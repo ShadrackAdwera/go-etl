@@ -12,7 +12,7 @@ import (
 )
 
 var testDb *sql.DB
-var testQuery *Queries
+var testQuery TxStore
 var testMaker token.TokenMaker
 
 func TestMain(m *testing.M) {
@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 	}
 
 	testDb, err = sql.Open(config.DbDriver, config.DbUrl)
-	testQuery = New(testDb)
+	testQuery = NewStore(testDb)
 	if err != nil {
 		panic(fmt.Errorf("error connecting to PG: %v", err))
 	}
