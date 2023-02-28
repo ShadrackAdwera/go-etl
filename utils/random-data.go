@@ -27,3 +27,8 @@ func RandomString(n int) string {
 func RandomInteger(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
 }
+
+func RandomWinner() string {
+	status := []string{"H", "A", "D"}
+	return status[rand.Intn(len(status))]
+}

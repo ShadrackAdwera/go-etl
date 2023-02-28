@@ -19,9 +19,9 @@ func CreateMatch(t *testing.T, user User) MatchDatum {
 		AwayScored:  int32(utils.RandomInteger(0, 10)),
 		HomeTeam:    utils.RandomString(6),
 		AwayTeam:    utils.RandomString(5),
-		MatchDate:   time.Now(),
+		MatchDate:   time.Now().Local().UTC(),
 		Referee:     utils.RandomString(7),
-		Winner:      utils.RandomString(1),
+		Winner:      utils.RandomWinner(),
 		Season:      strconv.Itoa(time.Now().Year()),
 		CreatedByID: user.ID,
 		FileID:      file.ID,
@@ -36,7 +36,7 @@ func CreateMatch(t *testing.T, user User) MatchDatum {
 	require.Equal(t, match.AwayScored, newMatch.AwayScored)
 	require.Equal(t, match.HomeTeam, newMatch.HomeTeam)
 	require.Equal(t, match.AwayTeam, newMatch.AwayTeam)
-	require.Equal(t, match.MatchDate, newMatch.MatchDate)
+	require.WithinDuration(t, match.MatchDate, newMatch.MatchDate, time.Second)
 	require.Equal(t, match.Referee, newMatch.Referee)
 	require.Equal(t, match.Winner, newMatch.Winner)
 	require.Equal(t, match.Season, newMatch.Season)
@@ -141,6 +141,6 @@ func TestDeleteMatch(t *testing.T) {
 	match, err = testQuery.GetMatchDataById(context.Background(), newMatch.ID)
 
 	require.ErrorIs(t, err, sql.ErrNoRows)
-	require.Nil(t, match)
+	require.Empty(t, match)
 
 }
