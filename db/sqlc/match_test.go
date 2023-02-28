@@ -10,9 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func CreateMatch(t *testing.T) MatchDatum {
-
-	user := CreateUser(t)
+func CreateMatch(t *testing.T, user User) MatchDatum {
 	file := CreateFile(t, user)
 
 	newMatch := CreateMatchDataParams{
@@ -45,4 +43,20 @@ func CreateMatch(t *testing.T) MatchDatum {
 	require.Equal(t, match.FileID, newMatch.FileID)
 
 	return match
+}
+
+func TestGetMatchData(t *testing.T) {
+	n := 5
+
+	user := CreateUser(t)
+
+	for i := 0; i < n; i++ {
+		CreateMatch(t, user)
+	}
+
+	matches, err := testQuery.GetMatchData(context.Background(), user.ID)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, matches)
+	require.Equal(t, len(matches), n)
 }
