@@ -35,7 +35,7 @@ func NewServer(store db.TxStore, config utils.AppConfig) *Server {
 	router.POST("/api/login", server.login)
 
 	// auth middleware
-	router.GET("/api/files", server.getFiles)
+	router.GET("/api/files/:id", server.getFiles)
 	router.GET("/api/matches", server.getMatches)
 	router.POST("/api/matches", server.createMatches)
 
