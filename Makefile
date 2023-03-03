@@ -12,5 +12,7 @@ sqlc:
 	sqlc generate
 tests:
 	go test -v -cover ./...
+mocks:
+	mockgen -package mockdb --destination db/mocks/store.go github.com/ShadrackAdwera/go-etl/db/sqlc TxStore
 
-.PHONY: migrate_init migrate_up migrate_down sqlc tests
+.PHONY: migrate_init migrate_up migrate_down sqlc tests mocks
