@@ -14,5 +14,7 @@ tests:
 	go test -v -cover ./...
 mocks:
 	mockgen -package mockdb --destination db/mocks/store.go github.com/ShadrackAdwera/go-etl/db/sqlc TxStore
+start:
+	go run main.go
 
-.PHONY: migrate_init migrate_up migrate_down sqlc tests mocks
+.PHONY: migrate_init migrate_up migrate_down sqlc tests mocks start
