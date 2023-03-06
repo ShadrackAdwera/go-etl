@@ -36,11 +36,15 @@ func NewServer(store db.TxStore, config utils.AppConfig) *Server {
 
 	// auth middleware
 	router.GET("/api/files/:id", server.getFiles)
+	router.POST("/api/files", server.uploadCsvFile)
 	router.GET("/api/matches", server.getMatches)
-	router.POST("/api/matches", server.createMatches)
 
 	server.router = router
 	return server
+}
+
+func (s *Server) StartServer(serverAddress string) error {
+	return s.router.Run(serverAddress)
 }
 
 func errJSON(err error) gin.H {
