@@ -55,14 +55,14 @@ func (srv *Server) signUp(ctx *gin.Context) {
 		return
 	}
 
-	aPayload, accessTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, srv.config.RefreshTokenDuration)
+	aPayload, accessTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
 		return
 	}
 
-	_, refreshTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, srv.config.RefreshTokenDuration)
+	_, refreshTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour*24)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
@@ -107,26 +107,25 @@ func (srv *Server) login(ctx *gin.Context) {
 		return
 	}
 
-	err = utils.IsPassword(user.Password, authRequest.Password)
+	err = utils.IsPassword(authRequest.Password, user.Password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errJSON(err))
 		return
 	}
 
-	aPayload, accessTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, srv.config.RefreshTokenDuration)
+	aPayload, accessTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
 		return
 	}
 
-	_, refreshTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, srv.config.RefreshTokenDuration)
+	_, refreshTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour*24)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
 		return
 	}
-
 	loginResponse := AuthResponse{
 		User: User{
 			ID:       user.ID,
