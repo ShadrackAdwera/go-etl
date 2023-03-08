@@ -35,9 +35,10 @@ func NewServer(store db.TxStore, config utils.AppConfig) *Server {
 	router.POST("/api/login", server.login)
 
 	// auth middleware
-	router.GET("/api/files/:id", server.getFiles)
-	router.POST("/api/files", server.uploadCsvFile)
-	router.GET("/api/matches", server.getMatches)
+	authRoutes := router.Group("/").Use(authMiddleware(tokenMaker))
+	authRoutes.GET("/api/files/:id", server.getFiles)
+	authRoutes.POST("/api/files", server.uploadCsvFile)
+	authRoutes.GET("/api/matches", server.getMatches)
 
 	server.router = router
 	return server
