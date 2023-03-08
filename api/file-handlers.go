@@ -8,24 +8,13 @@ import (
 	"time"
 
 	db "github.com/ShadrackAdwera/go-etl/db/sqlc"
+	"github.com/ShadrackAdwera/go-etl/token"
 	"github.com/gin-gonic/gin"
 )
 
-type UserArgs struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
 func (srv *Server) getFiles(ctx *gin.Context) {
-	// TODO: Implement middleware
-
-	var userId UserArgs
-
-	if err := ctx.ShouldBindUri(&userId); err != nil {
-		ctx.JSON(http.StatusBadRequest, errJSON(err))
-		return
-	}
-
-	files, err := srv.store.GetFiles(ctx, userId.ID)
+	user := ctx.MustGet(authPayload).(*token.TokenPayload)
+	files, err := srv.store.GetFiles(ctx, user.ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
@@ -74,7 +63,7 @@ func (srv *Server) uploadCsvFile(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
 		return
 	}
-
+	user := ctx.MustGet(authPayload).(*token.TokenPayload)
 	var matches []db.CreateMatchDataParams
 
 	for _, row := range matchRecords {
@@ -103,7 +92,7 @@ func (srv *Server) uploadCsvFile(ctx *gin.Context) {
 			MatchDate:   t,
 			Winner:      row[5],
 			Season:      strconv.Itoa(t.Year()),
-			CreatedByID: 1,
+			CreatedByID: user.ID,
 			FileID:      1,
 		}
 
