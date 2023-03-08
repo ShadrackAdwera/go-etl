@@ -3,12 +3,14 @@ package api
 import (
 	"net/http"
 
+	"github.com/ShadrackAdwera/go-etl/token"
 	"github.com/gin-gonic/gin"
 )
 
 func (srv *Server) getMatches(ctx *gin.Context) {
-	// middleware
-	matches, err := srv.store.GetMatchData(ctx, 1)
+	user := ctx.MustGet(authPayload).(*token.TokenPayload)
+
+	matches, err := srv.store.GetMatchData(ctx, user.ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusOK, errJSON(err))
