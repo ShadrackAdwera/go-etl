@@ -12,7 +12,6 @@ import (
 type Server struct {
 	store      db.TxStore
 	router     *gin.Engine
-	config     utils.AppConfig
 	tokenMaker token.TokenMaker
 }
 
@@ -36,7 +35,7 @@ func NewServer(store db.TxStore, config utils.AppConfig) *Server {
 
 	// auth middleware
 	authRoutes := router.Group("/").Use(authMiddleware(tokenMaker))
-	authRoutes.GET("/api/files/:id", server.getFiles)
+	authRoutes.GET("/api/files", server.getFiles)
 	authRoutes.POST("/api/files", server.uploadCsvFile)
 	authRoutes.GET("/api/matches", server.getMatches)
 
