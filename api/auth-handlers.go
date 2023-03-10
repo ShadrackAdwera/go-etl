@@ -55,7 +55,7 @@ func (srv *Server) signUp(ctx *gin.Context) {
 		return
 	}
 
-	aPayload, accessTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour)
+	aPayload, accessTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Minute*15)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
@@ -113,7 +113,7 @@ func (srv *Server) login(ctx *gin.Context) {
 		return
 	}
 
-	aPayload, accessTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour)
+	aPayload, accessTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Minute*15)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
