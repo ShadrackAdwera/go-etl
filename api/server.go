@@ -6,6 +6,7 @@ import (
 	db "github.com/ShadrackAdwera/go-etl/db/sqlc"
 	"github.com/ShadrackAdwera/go-etl/token"
 	"github.com/ShadrackAdwera/go-etl/utils"
+	"github.com/ShadrackAdwera/go-etl/workers"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,9 +14,10 @@ type Server struct {
 	store      db.TxStore
 	router     *gin.Engine
 	tokenMaker token.TokenMaker
+	taskDistro workers.TaskDistributor
 }
 
-func NewServer(store db.TxStore, config utils.AppConfig) *Server {
+func NewServer(store db.TxStore, config utils.AppConfig, distro workers.TaskDistributor) *Server {
 
 	tokenMaker, err := token.NewPasetoMaker(config.PasetoKey)
 
@@ -26,6 +28,7 @@ func NewServer(store db.TxStore, config utils.AppConfig) *Server {
 	server := &Server{
 		store:      store,
 		tokenMaker: tokenMaker,
+		taskDistro: distro,
 	}
 
 	router := gin.Default()
