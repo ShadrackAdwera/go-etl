@@ -8,6 +8,8 @@ import (
 	api "github.com/ShadrackAdwera/go-etl/api"
 	db "github.com/ShadrackAdwera/go-etl/db/sqlc"
 	"github.com/ShadrackAdwera/go-etl/utils"
+	"github.com/ShadrackAdwera/go-etl/workers"
+	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -31,8 +33,20 @@ func main() {
 		return
 	}
 
+	fmt.Printf("Redis Address : %s\n", config.RedisAddress)
+
 	store := db.NewStore(conn)
-	srv := api.NewServer(store, config)
+
+	redisOpts := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+
+	distro := workers.NewRedisTaskDistributor(redisOpts)
+
+	srv := api.NewServer(store, config, distro)
+
+	go runTaskProcessor(redisOpts, store)
+
 	err = srv.StartServer(config.ServerAddress)
 
 	if err != nil {
@@ -40,4 +54,16 @@ func main() {
 		return
 	}
 
+}
+
+func runTaskProcessor(opts asynq.RedisClientOpt, store db.TxStore) {
+	processor := workers.NewRedisTaskProcessor(opts, store)
+
+	err := processor.Start()
+
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to start task processor")
+	}
+
+	log.Info().Msg("started task processor")
 }
