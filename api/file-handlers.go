@@ -9,6 +9,7 @@ import (
 
 	db "github.com/ShadrackAdwera/go-etl/db/sqlc"
 	"github.com/ShadrackAdwera/go-etl/token"
+	"github.com/ShadrackAdwera/go-etl/workers"
 	"github.com/gin-gonic/gin"
 )
 
@@ -99,6 +100,15 @@ func (srv *Server) uploadCsvFile(ctx *gin.Context) {
 		matches = append(matches, matchDt)
 	}
 
-	ctx.JSON(http.StatusOK, matches)
+	err = srv.taskDistro.DistroSendFileDataToDb(ctx, &workers.DistroSendFileToDbPayload{
+		Matches: matches,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errJSON(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Data has been uploaded"})
 
 }
