@@ -8,6 +8,7 @@ import (
 )
 
 type TaskProcessor interface {
+	Start() error
 	ProcessSendFileDataToDb(
 		ctx context.Context,
 		task *asynq.Task,
@@ -25,4 +26,12 @@ func NewRedisTaskProcessor(rOpts asynq.RedisClientOpt, store db.TxStore) TaskPro
 		server: server,
 		store:  store,
 	}
+}
+
+func (p *RedisTaskProcessor) Start() error {
+	mux := asynq.NewServeMux()
+
+	mux.HandleFunc(TaskSendFileDataToDb, p.ProcessSendFileDataToDb)
+
+	return p.server.Run(mux)
 }
