@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/csv"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"strconv"
@@ -67,6 +68,17 @@ func (srv *Server) uploadCsvFile(ctx *gin.Context) {
 	user := ctx.MustGet(authPayload).(*token.TokenPayload)
 	var matches []db.CreateMatchDataParams
 
+	// TODO: PUT THIS INSIDE A TRANSACTION
+	createdFile, err := srv.store.CreateFile(ctx, db.CreateFileParams{
+		FileUrl:     fmt.Sprintf("s3:://url:%s", matchData.MatchCsvFile.Filename),
+		CreatedByID: user.ID,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errJSON(err))
+		return
+	}
+
 	for _, row := range matchRecords {
 		hmSc, err := strconv.Atoi(row[3])
 		if err != nil {
@@ -94,7 +106,7 @@ func (srv *Server) uploadCsvFile(ctx *gin.Context) {
 			Winner:      row[5],
 			Season:      strconv.Itoa(t.Year()),
 			CreatedByID: user.ID,
-			FileID:      1,
+			FileID:      createdFile.ID,
 		}
 
 		matches = append(matches, matchDt)
