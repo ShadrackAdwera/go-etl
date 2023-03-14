@@ -8,6 +8,7 @@ import (
 	db "github.com/ShadrackAdwera/go-etl/db/sqlc"
 	"github.com/ShadrackAdwera/go-etl/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -21,6 +22,7 @@ type AuthResponse struct {
 	AccessToken          string    `json:"access_token"`
 	RefreshToken         string    `json:"refresh_token"`
 	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
+	SessionID            uuid.UUID `json:"session_id"`
 }
 
 type SignUpRequest struct {
@@ -62,7 +64,7 @@ func (srv *Server) signUp(ctx *gin.Context) {
 		return
 	}
 
-	_, refreshTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour*24)
+	pL, refreshTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour*24)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
@@ -78,6 +80,7 @@ func (srv *Server) signUp(ctx *gin.Context) {
 		AccessToken:          accessTkn,
 		RefreshToken:         refreshTkn,
 		AccessTokenExpiresAt: aPayload.ExpiredAt,
+		SessionID:            pL.TokenId,
 	}
 
 	ctx.JSON(http.StatusCreated, resCreateUser)
@@ -120,7 +123,7 @@ func (srv *Server) login(ctx *gin.Context) {
 		return
 	}
 
-	_, refreshTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour*24)
+	pL, refreshTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour*24)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
@@ -135,6 +138,7 @@ func (srv *Server) login(ctx *gin.Context) {
 		AccessToken:          accessTkn,
 		RefreshToken:         refreshTkn,
 		AccessTokenExpiresAt: aPayload.ExpiredAt,
+		SessionID:            pL.TokenId,
 	}
 
 	ctx.JSON(http.StatusOK, loginResponse)
