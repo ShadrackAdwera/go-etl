@@ -40,3 +40,37 @@ func (distro *RedisTaskDistributor) DistroSendFileDataToDb(
 
 	return nil
 }
+
+func (p *RedisTaskProcessor) ProcessSendFileDataToDb(
+	ctx context.Context,
+	task *asynq.Task,
+) error {
+	var matchData []db.CreateMatchDataParams
+
+	if err := json.Unmarshal(task.Payload(), &matchData); err != nil {
+		return fmt.Errorf("unable to unmarshall json body: %w", err)
+	}
+
+	for _, match := range matchData {
+		_, err := p.store.CreateMatchData(ctx, db.CreateMatchDataParams{
+			HomeScored:  match.HomeScored,
+			AwayScored:  match.AwayScored,
+			HomeTeam:    match.HomeTeam,
+			AwayTeam:    match.AwayTeam,
+			MatchDate:   match.MatchDate,
+			Referee:     match.Referee,
+			Winner:      match.Winner,
+			Season:      match.Season,
+			CreatedByID: match.CreatedByID,
+			FileID:      match.FileID,
+		})
+
+		if err != nil {
+			return fmt.Errorf("unable to add match to db : %v", match)
+		}
+	}
+
+	log.Info().Msg("all tasks have been processed . . . ")
+
+	return nil
+}
