@@ -25,7 +25,7 @@ func (distro *RedisTaskDistributor) DistroSendFileDataToDb(
 	dt, err := json.Marshal(payload)
 
 	if err != nil {
-		return fmt.Errorf("unable to marshall json payload : %w", err)
+		return fmt.Errorf("unable to marshall json payload : %w", asynq.SkipRetry)
 	}
 
 	task := asynq.NewTask(TaskSendFileDataToDb, dt, options...)
@@ -45,11 +45,15 @@ func (p *RedisTaskProcessor) ProcessSendFileDataToDb(
 	ctx context.Context,
 	task *asynq.Task,
 ) error {
-	var matchData []db.CreateMatchDataParams
+	var matchDataPayload DistroSendFileToDbPayload
 
-	if err := json.Unmarshal(task.Payload(), &matchData); err != nil {
-		return fmt.Errorf("unable to unmarshall json body: %w", err)
+	if err := json.Unmarshal(task.Payload(), &matchDataPayload); err != nil {
+		return fmt.Errorf("unable to unmarshall json body: %w", asynq.SkipRetry)
 	}
+
+	log.Info().Msg("received message from queue . . . ")
+
+	matchData := matchDataPayload.Matches
 
 	for _, match := range matchData {
 		_, err := p.store.CreateMatchData(ctx, db.CreateMatchDataParams{
