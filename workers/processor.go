@@ -5,6 +5,7 @@ import (
 
 	db "github.com/ShadrackAdwera/go-etl/db/sqlc"
 	"github.com/hibiken/asynq"
+	"github.com/rs/zerolog/log"
 )
 
 type TaskProcessor interface {
@@ -21,7 +22,11 @@ type RedisTaskProcessor struct {
 }
 
 func NewRedisTaskProcessor(rOpts asynq.RedisClientOpt, store db.TxStore) TaskProcessor {
-	server := asynq.NewServer(rOpts, asynq.Config{})
+	server := asynq.NewServer(rOpts, asynq.Config{
+		ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
+			log.Error().Err(err).Str("task_type", task.Type()).Bytes("payload", task.Payload()).Msg("task processing failed")
+		}),
+	})
 	return &RedisTaskProcessor{
 		server: server,
 		store:  store,
@@ -33,5 +38,5 @@ func (p *RedisTaskProcessor) Start() error {
 
 	mux.HandleFunc(TaskSendFileDataToDb, p.ProcessSendFileDataToDb)
 
-	return p.server.Run(mux)
+	return p.server.Start(mux)
 }
