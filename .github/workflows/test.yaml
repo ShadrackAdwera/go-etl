@@ -17,7 +17,7 @@ jobs:
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: password
-          POSTGRES_DB: go_etl_test
+          POSTGRES_DB: go_etl
         ports:
           - 5431:5432
         options: >-
