@@ -16,7 +16,7 @@ func newTestServer(t *testing.T, store db.TxStore) *Server {
 		AccessTokenDuration: time.Minute,
 	}
 
-	server := NewServer(store, config)
+	server := NewServer(store, config, nil)
 	return server
 }
 
