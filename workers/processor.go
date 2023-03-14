@@ -1,11 +1,18 @@
 package workers
 
 import (
+	"context"
+
 	db "github.com/ShadrackAdwera/go-etl/db/sqlc"
 	"github.com/hibiken/asynq"
 )
 
-type TaskProcessor interface{}
+type TaskProcessor interface {
+	ProcessSendFileDataToDb(
+		ctx context.Context,
+		task *asynq.Task,
+	) error
+}
 
 type RedisTaskProcessor struct {
 	server *asynq.Server
