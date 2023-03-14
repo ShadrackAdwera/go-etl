@@ -1,8 +1,18 @@
 package workers
 
-import "github.com/hibiken/asynq"
+import (
+	"context"
 
-type TaskDistributor interface{}
+	"github.com/hibiken/asynq"
+)
+
+type TaskDistributor interface {
+	DistroSendFileDataToDb(
+		ctx context.Context,
+		payload *DistroSendFileToDbPayload,
+		options ...asynq.Option,
+	) error
+}
 
 type RedisTaskDistributor struct {
 	client *asynq.Client
