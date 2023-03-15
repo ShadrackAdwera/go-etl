@@ -114,6 +114,20 @@ func TestSignUp(t *testing.T) {
 			},
 		},
 		{
+			name: "TestInternalServerErrorFindUser",
+			body: db.CreateUserParams{
+				Username: user.Username,
+				Email:    user.Email,
+				Password: password,
+			},
+			buildStubs: func(t *testing.T, store *mockdb.MockTxStore) {
+				store.EXPECT().FindUserByEmail(gomock.Any(), gomock.Eq(user.Email)).Times(1).Return(db.User{}, sql.ErrConnDone)
+			},
+			comparator: func(t *testing.T, recoreder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recoreder.Code)
+			},
+		},
+		{
 			name: "TestInternalServerError",
 			body: db.CreateUserParams{
 				Username: user.Username,
