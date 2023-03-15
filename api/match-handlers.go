@@ -13,7 +13,7 @@ func (srv *Server) getMatches(ctx *gin.Context) {
 	matches, err := srv.store.GetMatchData(ctx, user.ID)
 
 	if err != nil {
-		ctx.JSON(http.StatusOK, errJSON(err))
+		ctx.JSON(http.StatusInternalServerError, errJSON(err))
 		return
 	}
 

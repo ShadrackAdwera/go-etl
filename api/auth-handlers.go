@@ -18,11 +18,11 @@ type User struct {
 }
 
 type AuthResponse struct {
-	User                 User      `json:"user"`
-	AccessToken          string    `json:"access_token"`
-	RefreshToken         string    `json:"refresh_token"`
-	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
-	SessionID            uuid.UUID `json:"session_id"`
+	User                 User      `json:"user,omitempty"`
+	AccessToken          string    `json:"access_token,omitempty"`
+	RefreshToken         string    `json:"refresh_token,omitempty"`
+	AccessTokenExpiresAt time.Time `json:"access_token_expires_at,omitempty"`
+	SessionID            uuid.UUID `json:"session_id,omitempty"`
 }
 
 type SignUpRequest struct {
@@ -46,25 +46,20 @@ func (srv *Server) signUp(ctx *gin.Context) {
 		return
 	}
 
+	_, err = srv.store.FindUserByEmail(ctx, signUpRequest.Email)
+
+	if err != nil {
+		if err != sql.ErrNoRows {
+			ctx.JSON(http.StatusInternalServerError, errJSON(err))
+			return
+		}
+	}
+
 	user, err := srv.store.CreateUser(ctx, db.CreateUserParams{
 		Username: signUpRequest.Username,
 		Email:    signUpRequest.Email,
 		Password: hashedPw,
 	})
-
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errJSON(err))
-		return
-	}
-
-	aPayload, accessTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour)
-
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errJSON(err))
-		return
-	}
-
-	pL, refreshTkn, err := srv.tokenMaker.CreateToken(user.Username, user.ID, user.Email, time.Hour*24)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
@@ -77,10 +72,6 @@ func (srv *Server) signUp(ctx *gin.Context) {
 			Username: user.Username,
 			Email:    user.Email,
 		},
-		AccessToken:          accessTkn,
-		RefreshToken:         refreshTkn,
-		AccessTokenExpiresAt: aPayload.ExpiredAt,
-		SessionID:            pL.TokenId,
 	}
 
 	ctx.JSON(http.StatusCreated, resCreateUser)
@@ -129,6 +120,23 @@ func (srv *Server) login(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errJSON(err))
 		return
 	}
+
+	sess, err := srv.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           pL.TokenId,
+		Username:     user.Username,
+		UserID:       user.ID,
+		RefreshToken: refreshTkn,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    pL.ExpiredAt,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errJSON(err))
+		return
+	}
+
 	loginResponse := AuthResponse{
 		User: User{
 			ID:       user.ID,
@@ -138,7 +146,7 @@ func (srv *Server) login(ctx *gin.Context) {
 		AccessToken:          accessTkn,
 		RefreshToken:         refreshTkn,
 		AccessTokenExpiresAt: aPayload.ExpiredAt,
-		SessionID:            pL.TokenId,
+		SessionID:            sess.ID,
 	}
 
 	ctx.JSON(http.StatusOK, loginResponse)
