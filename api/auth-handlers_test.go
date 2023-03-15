@@ -95,6 +95,43 @@ func TestSignUp(t *testing.T) {
 				compareRequests(t, recorder.Body, user)
 			},
 		},
+		{
+			name: "TestInvalidInputs",
+			body: db.CreateUserParams{
+				Username: "-",
+				Email:    user.Email,
+				Password: password,
+			},
+			buildStubs: func(t *testing.T, store *mockdb.MockTxStore) {
+				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(db.CreateUserParams{
+					Username: "-",
+					Email:    user.Email,
+					Password: password,
+				}, password)).Times(0)
+			},
+			comparator: func(t *testing.T, recoreder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recoreder.Code)
+			},
+		},
+		{
+			name: "TestInternalServerError",
+			body: db.CreateUserParams{
+				Username: user.Username,
+				Email:    user.Email,
+				Password: password,
+			},
+			buildStubs: func(t *testing.T, store *mockdb.MockTxStore) {
+				store.EXPECT().FindUserByEmail(gomock.Any(), gomock.Eq(user.Email)).Times(1).Return(db.User{}, sql.ErrNoRows)
+				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(db.CreateUserParams{
+					Username: user.Username,
+					Email:    user.Email,
+					Password: password,
+				}, password)).Times(1).Return(db.User{}, sql.ErrConnDone)
+			},
+			comparator: func(t *testing.T, recoreder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recoreder.Code)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
